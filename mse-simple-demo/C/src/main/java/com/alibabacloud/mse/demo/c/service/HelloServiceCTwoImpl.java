@@ -6,6 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
+import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.common.message.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,9 +51,12 @@ public class HelloServiceCTwoImpl implements HelloServiceCTwo {
             Message msg = new Message();
             msg.setTopic(topic);
             msg.setBody(value.getBytes(StandardCharsets.UTF_8));
-            producer.send(msg);
-            log.info("topic:{},messageString:{},__microservice_tag__:{}", topic, value, StringUtils.trimToNull(invokerTag));
-        } catch (Exception ignore) {
+            SendResult sendResult = producer.send(msg);
+            String msgId = sendResult.getMsgId();
+            value += ",msgId:" + msgId;
+            log.info("topic:{},msgId:{},messageString:{},__microservice_tag__:{}", topic, msgId, value, StringUtils.trimToNull(invokerTag));
+        } catch (Exception e) {
+            log.error("send message error", e);
         }
 
         return value;

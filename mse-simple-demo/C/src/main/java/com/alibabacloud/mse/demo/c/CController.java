@@ -5,12 +5,16 @@ import com.alibaba.csp.sentinel.EntryType;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
+import org.apache.rocketmq.client.producer.DefaultMQProducer;
+import org.apache.rocketmq.client.producer.SendResult;
+import org.apache.rocketmq.common.message.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.commons.util.InetUtils;
@@ -20,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -33,6 +38,11 @@ class CController {
 
     @Autowired
     String serviceTag;
+
+    @Autowired
+    DefaultMQProducer producer;
+    @Value("${rocketmq.consumer.topic}")
+    private String topic;
 
     @Value("${throwException:false}")
     boolean throwException;
@@ -96,6 +106,24 @@ class CController {
         } catch (BlockException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @GetMapping("/c-rocket-mq")
+    public String cRocketMq() {
+        String value = "C" + serviceTag + "[" + inetUtils.findFirstNonLoopbackAddress().getHostAddress() + "]";
+        try {
+            Message msg = new Message();
+            msg.setTopic(topic);
+            msg.setBody(value.getBytes(StandardCharsets.UTF_8));
+            SendResult sendResult = producer.send(msg);
+            String msgId = sendResult.getMsgId();
+            value += ",msgId:" + msgId;
+            log.info("topic:{},msgId:{},messageString:{}", topic, msgId, value);
+        } catch (Exception e) {
+            log.error("send message error", e);
+        }
+
+        return value;
     }
 
     @GetMapping("/spring_boot")

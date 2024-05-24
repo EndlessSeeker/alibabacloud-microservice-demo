@@ -2,7 +2,9 @@ package com.alibabacloud.mse.demo.a.mq;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.rocketmq.acl.common.SessionCredentials;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
+import org.apache.rocketmq.client.consumer.rebalance.AllocateMessageQueueAveragely;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.common.consumer.ConsumeFromWhere;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +14,7 @@ import org.springframework.cloud.commons.util.InetUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
+import org.apache.rocketmq.acl.common.AclClientRPCHook;
 
 @Slf4j
 @Configuration
@@ -43,7 +46,14 @@ public class RocketMqConfiguration {
     @Bean(initMethod = "start", destroyMethod = "shutdown")
     public DefaultMQPushConsumer mqPushConsumer() throws MQClientException {
         log.info("正在启动rocketMq的consumer");
-        DefaultMQPushConsumer consumer = new DefaultMQPushConsumer(groupName);
+        AclClientRPCHook rpcHook = new AclClientRPCHook(new SessionCredentials(
+                System.getenv("ALIBABA_CLOUD_ACCESS_KEY_ID"),
+                System.getenv("ALIBABA_CLOUD_ACCESS_KEY_SECRET")
+        ));
+
+        DefaultMQPushConsumer consumer = new DefaultMQPushConsumer(groupName, rpcHook, new AllocateMessageQueueAveragely());
+//        DefaultMQPushConsumer consumer = new DefaultMQPushConsumer(groupName);
+
         consumer.setNamesrvAddr(nameSrvAddr);
         consumer.subscribe(topic, "*");
         consumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_FIRST_OFFSET);

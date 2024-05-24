@@ -34,13 +34,16 @@ public class MqConsumer implements MessageListenerConcurrently {
     @Override
     public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> list, ConsumeConcurrentlyContext consumeConcurrentlyContext) {
         try {
+            log.info("messageList size:{}", list.size());
             MessageExt messageExt = list.get(0);
             String topic = messageExt.getTopic();
             String messageString = new String(messageExt.getBody(), StandardCharsets.UTF_8);
             String result = "A" + serviceTag + "[" + inetUtils.findFirstNonLoopbackAddress().getHostAddress() + "]" + " -> " +
                     restTemplate.getForObject("http://sc-B/b", String.class);
 
-            log.info("topic:{},producer:{},invoke result:{}", topic, messageString, result);
+            String msgId = messageExt.getMsgId();
+
+            log.info("topic:{},msgId:{},producer:{},invoke result:{}", topic, msgId, messageString, result);
 
             return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
         } finally {

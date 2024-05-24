@@ -19,7 +19,7 @@
         <spring-cloud.version>2022.0.5</spring-cloud.version>
         <spring-cloud-alibaba.version>2022.0.0.0</spring-cloud-alibaba.version>
         <dubbo.version>3.2.11</dubbo.version>
-        <rocketmq.version>4.5.2</rocketmq.version>
+        <rocketmq.version>4.6.1</rocketmq.version>
     </properties>
 
     <dependencies>
@@ -47,6 +47,11 @@
         <dependency>
             <groupId>org.apache.rocketmq</groupId>
             <artifactId>rocketmq-client</artifactId>
+            <version>${rocketmq.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.rocketmq</groupId>
+            <artifactId>rocketmq-acl</artifactId>
             <version>${rocketmq.version}</version>
         </dependency>
 
