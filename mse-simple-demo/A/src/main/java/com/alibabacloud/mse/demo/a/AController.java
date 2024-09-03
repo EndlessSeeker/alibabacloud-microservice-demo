@@ -23,7 +23,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
 
 import javax.annotation.PostConstruct;
 import java.io.UnsupportedEncodingException;
@@ -34,7 +33,6 @@ import java.util.concurrent.ExecutionException;
 
 @Api(value = "/", tags = {"入口应用"})
 @RestController
-@RefreshScope
 class AController {
     private static final Logger log = LoggerFactory.getLogger(AController.class);
 
